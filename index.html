@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pacman</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f1720;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const pacmanMapData = [
+            3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4,
+            2, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 2,
+            2, 8, 3, 1, 1, 4, 8, 3, 1, 1, 1, 4, 8, 2, 2, 8, 3, 1, 1, 1, 4, 8, 3, 1, 1, 4, 8, 2,
+            2, 9, 2, 0, 0, 2, 8, 2, 0, 0, 0, 2, 8, 2, 2, 8, 2, 0, 0, 0, 2, 8, 2, 0, 0, 2, 9, 2,
+            2, 8, 5, 1, 1, 6, 8, 5, 1, 1, 1, 6, 8, 5, 6, 8, 5, 1, 1, 1, 6, 8, 5, 1, 1, 6, 8, 2,
+            2, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 2,
+            2, 8, 3, 1, 1, 4, 8, 3, 4, 8, 3, 1, 1, 1, 1, 1, 1, 4, 8, 3, 4, 8, 3, 1, 1, 4, 8, 2,
+            2, 8, 5, 1, 1, 6, 8, 2, 2, 8, 5, 1, 1, 4, 3, 1, 1, 6, 8, 2, 2, 8, 5, 1, 1, 6, 8, 2,
+            2, 8, 8, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 8, 8, 2,
+            5, 1, 1, 1, 1, 4, 8, 2, 5, 1, 1, 4, 0, 2, 2, 0, 3, 1, 1, 6, 2, 8, 3, 1, 1, 1, 1, 6,
+            0, 0, 0, 0, 0, 2, 8, 2, 3, 1, 1, 6, 0, 5, 6, 0, 5, 1, 1, 4, 2, 8, 2, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 2, 8, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 8, 2, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 2, 8, 2, 2, 0, 3, 1, 1, 7, 7, 1, 1, 4, 0, 2, 2, 8, 2, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 6, 8, 5, 6, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 5, 6, 8, 5, 1, 1, 1, 1, 1,
+            0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 4, 8, 3, 4, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 3, 4, 8, 3, 1, 1, 1, 1, 1,
+            0, 0, 0, 0, 0, 2, 8, 2, 2, 0, 5, 1, 1, 1, 1, 1, 1, 6, 0, 2, 2, 8, 2, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 2, 8, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 8, 2, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 2, 8, 2, 2, 0, 3, 1, 1, 1, 1, 1, 1, 4, 0, 2, 2, 8, 2, 0, 0, 0, 0, 0,
+            3, 1, 1, 1, 1, 6, 8, 5, 6, 0, 5, 1, 1, 4, 3, 1, 1, 6, 0, 5, 6, 8, 5, 1, 1, 1, 1, 4,
+            2, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 2,
+            2, 8, 3, 1, 1, 4, 8, 3, 1, 1, 1, 4, 8, 2, 2, 8, 3, 1, 1, 1, 4, 8, 3, 1, 1, 4, 8, 2,
+            2, 8, 5, 1, 4, 2, 8, 5, 1, 1, 1, 6, 8, 5, 6, 8, 5, 1, 1, 1, 6, 8, 2, 3, 1, 6, 8, 2,
+            2, 9, 8, 8, 2, 2, 8, 8, 8, 8, 8, 8, 8, 0, 0, 8, 8, 8, 8, 8, 8, 8, 2, 2, 8, 8, 9, 2,
+            5, 1, 4, 8, 2, 2, 8, 3, 4, 8, 3, 1, 1, 1, 1, 1, 1, 4, 8, 3, 4, 8, 2, 2, 8, 3, 1, 6,
+            3, 1, 6, 8, 5, 6, 8, 2, 2, 8, 5, 1, 1, 4, 3, 1, 1, 6, 8, 2, 2, 8, 5, 6, 8, 5, 1, 4,
+            2, 8, 8, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 2, 2, 8, 8, 8, 8, 8, 8, 2,
+            2, 8, 3, 1, 1, 1, 1, 6, 5, 1, 1, 4, 8, 2, 2, 8, 3, 1, 1, 6, 5, 1, 1, 1, 1, 4, 8, 2,
+            2, 8, 5, 1, 1, 1, 1, 1, 1, 1, 1, 6, 8, 5, 6, 8, 5, 1, 1, 1, 1, 1, 1, 1, 1, 6, 8, 2,
+            2, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 2,
+            5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6
+        ];
+
+        const sources = [
+            "assets/block_1.png", "assets/block_2.png", "assets/block_3.png", "assets/block_4.png",
+            "assets/block_5.png", "assets/block_6.png", "assets/block_7.png", "assets/pill_1.png", "assets/pill_2.png",
+            "assets/pacman_0.png", "assets/pacman_1.png", "assets/pacman_2.png", "assets/pacman_3.png",
+            "assets/pacman_4.png", "assets/pacman_5.png", "assets/pacman_6.png", "assets/pacman_7.png",
+            "assets/pacman_8.png", "assets/pacman_9.png", "assets/pacman_10.png", "assets/pacman_11.png",
+            "assets/pacman_12.png", "assets/blinky_1.png", "assets/blinky_2.png", "assets/blinky_3.png", "assets/blinky_4.png",
+            "assets/pinky_1.png", "assets/pinky_2.png", "assets/pinky_3.png", "assets/pinky_4.png",
+            "assets/inky_1.png", "assets/inky_2.png", "assets/inky_3.png", "assets/inky_4.png",
+            "assets/clyde_1.png", "assets/clyde_2.png", "assets/clyde_3.png", "assets/clyde_4.png",
+            "assets/ghost_scared_1.png", "assets/ghost_scared_2.png", "assets/ghost_scared_3.png", "assets/ghost_scared_4.png"
+        ];
+
+        const width = 28;
+        const height = 31;
+        const tileSize = 32;
+        const images = [];
+
+        let pacmanFrame = 0;
+        let loaded = 0;
+        let lastTimeStamp = 0;
+        let speed = 5;
+        let score = 0;
+        let lives = 0;
+
+        let scaredDuration = 10;
+        let scatterDuration = 7;
+        let chaseDuration = 20;
+        let waitDuration = 5;
+
+        let pacmanMap = [];
+
+        let animationId;
+
+        let player = { x: 0, y: 0, direction: "east", queuedDirection: null };
+
+        let blinky = { x: 0, y: 0, direction: "north", state: "scatter", sx: width - 1, sy: 1, atIntersection: false, ghostModeTimer: 0 };
+        let pinky = { x: 0, y: 0, direction: "north", state: "scatter", sx: 1, sy: 1, atIntersection: false, ghostModeTimer: 0 };
+        let inky = { x: 0, y: 0, direction: "north", state: "scatter", sx: width - 1, sy: height - 1, atIntersection: false, ghostModeTimer: 0 };
+        let clyde = { x: 0, y: 0, direction: "north", state: "scatter", sx: 1, sy: height - 1, atIntersection: false, ghostModeTimer: 0 };
+
+        function gameLoop(timeStamp) {
+            const deltaTime = (timeStamp - lastTimeStamp) / 1000;
+            lastTimeStamp = timeStamp;
+
+            ghostAI(blinky, 0);
+            ghostAI(pinky, 1);
+            ghostAI(inky, 2);
+            ghostAI(clyde, 3);
+
+            updateGhostState(blinky, deltaTime);
+            updateGhostState(pinky, deltaTime);
+            updateGhostState(inky, deltaTime);
+            updateGhostState(clyde, deltaTime);
+
+            if (checkGameOver()) {
+                lives--;
+                startGame();
+                return;
+            }
+
+            if (checkWin()) {
+                speed++;
+                scaredDuration -= 0.5;
+                chaseDuration += 1;
+                scatterDuration -= 0.5;
+                startGame(true);
+                return;
+            }
+
+            move(player, deltaTime);
+            move(blinky, deltaTime);
+            move(pinky, deltaTime);
+            move(inky, deltaTime);
+            move(clyde, deltaTime);
+            eat();
+            render();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function checkGameOver() {
+            if (checkCollision(blinky) || checkCollision(pinky) || checkCollision(inky) || checkCollision(clyde)) {
+                if (blinky.state === "scared" && checkCollision(blinky)) {
+                    blinky.x = 13;
+                    blinky.y = 14;
+                    blinky.state = "wait";
+                    blinky.ghostModeTimer = waitDuration;
+                    score += 200;
+                } else if (pinky.state === "scared" && checkCollision(pinky)) {
+                    pinky.x = 13;
+                    pinky.y = 14;
+                    pinky.state = "wait";
+                    pinky.ghostModeTimer = waitDuration;
+                    score += 200;
+                } else if (inky.state === "scared" && checkCollision(inky)) {
+                    inky.x = 13;
+                    inky.y = 14;
+                    inky.state = "wait";
+                    inky.ghostModeTimer = waitDuration;
+                    score += 200;
+                } else if (clyde.state === "scared" && checkCollision(clyde)) {
+                    clyde.x = 13;
+                    clyde.y = 14;
+                    clyde.state = "wait";
+                    clyde.ghostModeTimer = waitDuration;
+                    score += 200;
+                } else {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkWin() {
+            for (let i = 0; i < pacmanMap.length; i++) {
+                if (pacmanMap[i] === 8 || pacmanMap[i] === 9) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function updateGhostState(body, deltaTime) {
+            body.ghostModeTimer -= deltaTime;
+
+            if (body.ghostModeTimer <= 0) {
+                if (body.state === "chase") {
+                    body.state = "scatter";
+                    body.ghostModeTimer = scatterDuration;
+                } else if (body.state === "scatter") {
+                    body.state = "chase";
+                    body.ghostModeTimer = chaseDuration;
+                } else if (body.state === "scared") {
+                    body.state = "chase";
+                    body.ghostModeTimer = chaseDuration;
+                } else if (body.state === "wait") {
+                    body.state = "chase";
+                    body.ghostModeTimer = chaseDuration;
+                }
+            }
+        }
+
+        function checkCollision(ghost) {
+            const px = Math.round(player.x);
+            const py = Math.round(player.y);
+            const gx = Math.round(ghost.x);
+            const gy = Math.round(ghost.y);
+            if (px === gx && py === gy) return true;
+            return false;
+        }
+
+        function move(body, deltaTime) {
+            if (body.queuedDirection && isNearCenter(body.x) && isNearCenter(body.y)) {
+                body.direction = body.queuedDirection;
+                body.queuedDirection = null;
+            }
+
+            const dist = speed * deltaTime;
+
+            if (body.state) {
+                if (body.state === "wait") {
+                    return;
+                }
+            }
+
+            switch (body.direction) {
+                case "north":
+                    if (isWallInDir(body.x, body.y, "north") !== "wall") {
+                        body.y -= dist;
+                    } else {
+                        body.y = Math.max(body.y - dist, Math.round(body.y));
+                    }
+                    break;
+                case "south":
+                    if (isWallInDir(body.x, body.y, "south") !== "wall" && isWallInDir(body.x, body.y, "south") !== "door") {
+                        body.y += dist;
+                    } else {
+                        body.y = Math.min(body.y + dist, Math.round(body.y));
+                    }
+                    break;
+                case "west":
+                    if (isWallInDir(body.x, body.y, "west") !== "wall") {
+                        body.x -= dist;
+                    } else {
+                        body.x = Math.max(body.x - dist, Math.round(body.x));
+                    }
+                    break;
+                case "east":
+                    if (isWallInDir(body.x, body.y, "east") !== "wall") {
+                        body.x += dist;
+                    } else {
+                        body.x = Math.min(body.x + dist, Math.round(body.x));
+                    }
+                    break;
+            }
+
+            if (body.x < -0.5) {
+                body.x = width - 0.5;
+            } else if (body.x > width - 0.5) {
+                body.x = -0.5;
+            }
+
+            smoothSnap(body, deltaTime);
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    draw(x, y, pacmanMap[y * width + x]);
+                }
+            }
+            draw(player.x, player.y, 10);
+            draw(blinky.x, blinky.y, 11);
+            draw(pinky.x, pinky.y, 12);
+            draw(inky.x, inky.y, 13);
+            draw(clyde.x, clyde.y, 14);
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 20, 40);
+
+            for (let i = 0; i < lives; i++) {
+                ctx.drawImage(images[11], 32 + tileSize * i, tileSize * height + 64, tileSize, tileSize);
+            }
+        }
+
+        function draw(x, y, type) {
+            switch (type) {
+                case 1: ctx.drawImage(images[0], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 2: ctx.drawImage(images[1], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 3: ctx.drawImage(images[2], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 4: ctx.drawImage(images[3], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 5: ctx.drawImage(images[4], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 6: ctx.drawImage(images[5], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 7: ctx.drawImage(images[6], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 8: ctx.drawImage(images[7], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 9: ctx.drawImage(images[8], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                case 10:
+                    if (pacmanFrame === 0) {
+                        ctx.drawImage(images[9], x * tileSize, y * tileSize + 64, tileSize, tileSize);
+                    }
+                    else if (pacmanFrame === 1 || pacmanFrame === 5) {
+                        switch (player.direction) {
+                            case "north": ctx.drawImage(images[13], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[19], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[16], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[10], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    }
+                    else if (pacmanFrame === 2 || pacmanFrame === 4) {
+                        switch (player.direction) {
+                            case "north": ctx.drawImage(images[14], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[20], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[17], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[11], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    }
+                    else if (pacmanFrame === 3) {
+                        switch (player.direction) {
+                            case "north": ctx.drawImage(images[15], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[21], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[18], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[12], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    }
+
+                    if (isWallInDir(player.x, player.y, player.direction) !== "wall" && isWallInDir(player.x, player.y, player.direction) !== "door") {
+                        pacmanFrame++;
+                        if (pacmanFrame > 5) pacmanFrame = 0;
+                    } else {
+                        pacmanFrame = 2;
+                    }
+                    break;
+
+                case 11:
+                    if (blinky.state === "scared") {
+                        switch (blinky.direction) {
+                            case "north": ctx.drawImage(images[38], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[39], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[40], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[41], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    } else {
+                        switch (blinky.direction) {
+                            case "north": ctx.drawImage(images[22], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[23], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[24], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[25], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    }
+                    break;
+                case 12:
+                    if (pinky.state === "scared") {
+                        switch (pinky.direction) {
+                            case "north": ctx.drawImage(images[38], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[39], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[40], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[41], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    } else {
+                        switch (pinky.direction) {
+                            case "north": ctx.drawImage(images[26], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[27], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[28], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[29], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    }
+                    break;
+                case 13:
+                    if (inky.state === "scared") {
+                        switch (inky.direction) {
+                            case "north": ctx.drawImage(images[38], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[39], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[40], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[41], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    } else {
+                        switch (inky.direction) {
+                            case "north": ctx.drawImage(images[30], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[31], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[32], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[33], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    }
+                    break;
+                case 14:
+                    if (clyde.state === "scared") {
+                        switch (clyde.direction) {
+                            case "north": ctx.drawImage(images[38], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[39], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[40], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[41], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    } else {
+                        switch (clyde.direction) {
+                            case "north": ctx.drawImage(images[34], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "south": ctx.drawImage(images[35], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "west": ctx.drawImage(images[36], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                            case "east": ctx.drawImage(images[37], x * tileSize, y * tileSize + 64, tileSize, tileSize); break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        function ghostAI(body, type) {
+            if (isNearCenter(body.x) && isNearCenter(body.y)) {
+                if (body.atIntersection) return;
+                body.atIntersection = true;
+
+                const options = getIntersections(body.x, body.y, body.direction);
+
+                if (options.length === 0) {
+                    body.direction = opposite[body.direction];
+                    return;
+                }
+
+                let target = { x: 0, y: 0 };
+
+                if (body.x >= 10 && body.x <= 17 && body.y >= 12 && body.y <= 16) {
+                    target.x = 13;
+                    target.y = 11;
+                } else {
+                    switch (type) {
+                        case 0: // blinky
+                            if (body.state === "chase") {
+                                target.x = player.x;
+                                target.y = player.y;
+                            } else if (body.state === "scatter") {
+                                target.x = body.sx;
+                                target.y = body.sy;
+                            } else if (body.state === "scared") {
+                                body.direction = options[Math.floor(Math.random() * options.length)];
+                                return;
+                            }
+                            break;
+                        case 1: // pinky
+                            if (body.state === "chase") {
+                                let dx = 0, dy = 0;
+                                switch (player.direction) {
+                                    case "north": dy = -4; break;
+                                    case "south": dy = 4; break;
+                                    case "west": dx = -4; break;
+                                    case "east": dx = 4; break;
+                                }
+                                target.x = player.x + dx;
+                                target.y = player.y + dy;
+                            } else if (body.state === "scatter") {
+                                target.x = body.sx;
+                                target.y = body.sy;
+                            } else if (body.state === "scared") {
+                                body.direction = options[Math.floor(Math.random() * options.length)];
+                                return;
+                            }
+                            break;
+                        case 2: // inky
+                            if (body.state === "chase") {
+                                let dx = 0, dy = 0;
+                                switch (player.direction) {
+                                    case "north": dy = -2; break;
+                                    case "south": dy = 2; break;
+                                    case "west": dx = -2; break;
+                                    case "east": dx = 2; break;
+                                }
+                                const targetX = player.x + dx;
+                                const targetY = player.y + dy;
+                                const vx = targetX - blinky.x;
+                                const vy = targetY - blinky.y;
+                                target.x = blinky.x + vx * 2;
+                                target.y = blinky.y + vy * 2;
+                            } else if (body.state === "scatter") {
+                                target.x = body.sx;
+                                target.y = body.sy;
+                            } else if (body.state === "scared") {
+                                body.direction = options[Math.floor(Math.random() * options.length)];
+                                return;
+                            }
+                            break;
+                        case 3: // clyde
+                            if (body.state === "chase") {
+                                const distToPlayer = Math.hypot(body.x - player.x, body.y - player.y);
+                                if (distToPlayer > 8) {
+                                    target.x = player.x;
+                                    target.y = player.y;
+                                } else {
+                                    target.x = body.sx;
+                                    target.y = body.sy;
+                                }
+                            } else if (body.state === "scatter") {
+                                target.x = body.sx;
+                                target.y = body.sy;
+                            } else if (body.state === "scared") {
+                                body.direction = options[Math.floor(Math.random() * options.length)];
+                                return;
+                            }
+                            break;
+                    }
+                }
+
+                body.direction = findShortestDirection(options, body.x, body.y, target.x, target.y);
+            } else {
+
+                body.atIntersection = false;
+            }
+        }
+
+        function eat() {
+            if (isNearCenter(player.x) && isNearCenter(player.y)) {
+                const tile = pacmanMap[Math.round(player.y) * width + Math.round(player.x)];
+                if (tile === 8 || tile === 9) {
+                    pacmanMap[Math.round(player.y) * width + Math.round(player.x)] = 0;
+                    score += (tile === 8) ? 10 : 50;
+                }
+
+                if (tile === 9) {
+                    blinky.state = "scared";
+                    blinky.ghostModeTimer = scaredDuration;
+                    pinky.state = "scared";
+                    pinky.ghostModeTimer = scaredDuration;
+                    inky.state = "scared";
+                    inky.ghostModeTimer = scaredDuration;
+                    clyde.state = "scared";
+                    clyde.ghostModeTimer = scaredDuration;
+                }
+            }
+        }
+
+        const opposite = { north: "south", south: "north", west: "east", east: "west" };
+
+        function findShortestDirection(options, bodyX, bodyY, targetX, targetY) {
+            const startX = Math.round(bodyX);
+            const startY = Math.round(bodyY);
+
+            let bestDir = options[0];
+            let bestDist = Infinity;
+
+            for (const dir of options) {
+                const delta = dirToDelta(dir);
+                const nx = startX + delta.dx;
+                const ny = startY + delta.dy;
+                const dist = Math.hypot(nx - targetX, ny - targetY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestDir = dir;
+                }
+            }
+
+            return bestDir;
+        }
+
+        function getIntersections(x, y, currentDir) {
+            x = Math.round(x);
+            y = Math.round(y);
+
+            const oppDir = opposite[currentDir];
+            let directions = [];
+
+            // Norden erlaubt, wenn kein Wall und nicht die Gegenrichtung
+            if ((pacmanMap[(y - 1) * width + x] < 1 || pacmanMap[(y - 1) * width + x] > 6) && oppDir !== "north") {
+                directions.push("north");
+            }
+            // Süden
+            if ((pacmanMap[(y + 1) * width + x] < 1 || pacmanMap[(y + 1) * width + x] > 7) && oppDir !== "south") {
+                directions.push("south");
+            }
+            // Westen
+            if ((pacmanMap[y * width + (x - 1)] < 1 || pacmanMap[y * width + (x - 1)] > 7) && oppDir !== "west") {
+                directions.push("west");
+            }
+            // Osten
+            if ((pacmanMap[y * width + (x + 1)] < 1 || pacmanMap[y * width + (x + 1)] > 7) && oppDir !== "east") {
+                directions.push("east");
+            }
+
+            if (x === 0 && y === 14) {
+                directions.push("west");
+            }
+
+            if (x === 27 && y === 14) {
+                directions.push("east");
+            }
+
+            return directions;
+        }
+
+        function dirToDelta(dir) {
+            switch (dir) {
+                case "north": return { dx: 0, dy: -1 };
+                case "south": return { dx: 0, dy: 1 };
+                case "west": return { dx: -1, dy: 0 };
+                case "east": return { dx: 1, dy: 0 };
+            }
+        }
+
+        function isWallInDir(x, y, dir) {
+            const cx = Math.round(x);
+            const cy = Math.round(y);
+
+            let tx = cx;
+            let ty = cy;
+
+            switch (dir) {
+                case "north": ty = cy - 1; break;
+                case "south": ty = cy + 1; break;
+                case "west": tx = cx - 1; break;
+                case "east": tx = cx + 1; break;
+            }
+
+            if (tx < 0 || tx >= width) return "out";
+            if (ty < 0 || ty >= height) return "out";
+
+            return isWall(tx, ty);
+        }
+
+        function isWall(x, y) {
+            const tile = pacmanMap[Math.round(y) * width + Math.round(x)];
+            if (tile >= 1 && tile <= 6) return "wall";
+            else if (tile === 7) return "door";
+            else return "none";
+        }
+
+        function smoothSnap(body, deltaTime) {
+            const snapStrength = 15 * deltaTime;
+            if (body.direction === "east" || body.direction === "west") {
+                const targetY = Math.round(body.y);
+                body.y += (targetY - body.y) * snapStrength;
+            }
+            if (body.direction === "north" || body.direction === "south") {
+                const targetX = Math.round(body.x);
+                body.x += (targetX - body.x) * snapStrength;
+            }
+        }
+
+        function isNearCenter(value) {
+            return Math.abs(value - Math.round(value)) < 0.2;
+        }
+
+        function startGame(newRound = false) {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            canvas.width = width * tileSize;
+            canvas.height = height * tileSize + 128;
+            player.direction = "east";
+            player.x = 14;
+            player.y = 23;
+            blinky.x = 13;
+            blinky.y = 14;
+            blinky.state = "chase";
+            blinky.ghostModeTimer = chaseDuration;
+            pinky.x = 14;
+            pinky.y = 14;
+            pinky.state = "wait";
+            pinky.ghostModeTimer = 3;
+            inky.x = 15;
+            inky.y = 14;
+            inky.state = "wait";
+            inky.ghostModeTimer = 6;
+            clyde.x = 16;
+            clyde.y = 14;
+            clyde.state = "wait";
+            clyde.ghostModeTimer = 9;
+            pacmanFrame = 0;
+
+            if (newRound) {
+                pacmanMap = pacmanMapData.slice();
+            }
+
+            if (lives <= 0) {
+                score = 0;
+                lives = 3;
+                pacmanMap = pacmanMapData.slice();
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function random(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function onLoad() {
+            loaded++;
+            if (loaded === sources.length) {
+
+                startGame();
+            }
+        }
+
+        for (let i = 0; i < sources.length; i++) {
+            images[i] = new Image();
+            images[i].src = sources[i];
+            images[i].onload = onLoad;
+        }
+
+        document.addEventListener("keydown", (event) => {
+            switch (event.key) {
+                case "w": player.queuedDirection = "north"; break;
+                case "s": player.queuedDirection = "south"; break;
+                case "a": player.queuedDirection = "west"; break;
+                case "d": player.queuedDirection = "east"; break;
+            }
+        });
+    </script>
+</body>
+</html>
